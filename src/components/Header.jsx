@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   ShieldCheck, Sparkles, DollarSign, Lock, Unlock, 
-  Share2, Twitter, Check, ExternalLink, Megaphone 
+  Share2, Check, ExternalLink, Megaphone 
 } from 'lucide-react';
 
 export function Header({ isPro, onOpenPricing, onOpenPlaybook }) {
