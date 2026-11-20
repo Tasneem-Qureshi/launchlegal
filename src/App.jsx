@@ -5,6 +5,7 @@ import { FormWizard } from './components/FormWizard';
 import { DocumentPreview } from './components/DocumentPreview';
 import { PricingModal } from './components/PricingModal';
 import { RevenuePlaybook } from './components/RevenuePlaybook';
+import { HostedView } from './components/HostedView';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 
@@ -42,6 +43,25 @@ export default function App() {
   const [isPricingOpen, setIsPricingOpen] = useState(false);
   const [isPlaybookOpen, setIsPlaybookOpen] = useState(false);
 
+  // Check if viewing as a standalone hosted policy page
+  const [isHostedView, setIsHostedView] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('hosted') === 'true';
+  });
+
+  // Handle URL query parameters (e.g. ?app=MyApp&doc=terms&hosted=true)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const appParam = params.get('app');
+    const docParam = params.get('doc');
+    if (appParam) {
+      setConfig(prev => ({ ...prev, appName: appParam }));
+    }
+    if (docParam && ['privacy', 'terms', 'ai', 'cookies', 'checklist'].includes(docParam)) {
+      setActiveTab(docParam);
+    }
+  }, []);
+
   // Persistent Pro status from localStorage
   const [isPro, setIsPro] = useState(() => {
     return localStorage.getItem('launchlegal_is_pro') === 'true';
@@ -67,6 +87,21 @@ export default function App() {
       checklist: generateAppStoreChecklist(config)
     };
   }, [config]);
+
+  // If in Hosted Public View, show clean reading page with referral banner
+  if (isHostedView) {
+    return (
+      <HostedView
+        docTitle={activeTab}
+        docContent={documents[activeTab] || documents.privacy}
+        appName={config.appName}
+        onExit={() => {
+          setIsHostedView(false);
+          window.history.pushState({}, '', '/');
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-brand-500 selection:text-white">
@@ -117,7 +152,7 @@ export default function App() {
         onReset={handleReset}
       />
 
-      {/* Revenue Blueprint / Strategy Modal */}
+      {/* Revenue Blueprint & Distribution Modal */}
       <RevenuePlaybook
         isOpen={isPlaybookOpen}
         onClose={() => setIsPlaybookOpen(false)}

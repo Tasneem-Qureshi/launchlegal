@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FileText, Copy, Check, Download, Edit3, Eye, Lock, 
-  Sparkles, CheckCircle2, Shield, ListChecks, Cookie, BookOpen 
+  Sparkles, CheckCircle2, Shield, ListChecks, Cookie, BookOpen, Globe 
 } from 'lucide-react';
 import { exportDocumentToPdf } from '../utils/pdfExport';
 
@@ -16,6 +16,7 @@ export function DocumentPreview({
   const [copiedFormat, setCopiedFormat] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editableDocs, setEditableDocs] = useState(documents);
+  const [hostedCopied, setHostedCopied] = useState(false);
 
   useEffect(() => {
     setEditableDocs(documents);
@@ -75,6 +76,17 @@ ${currentContent.split('\n').map(line => {
     exportDocumentToPdf(currentTabObj.label, currentContent, appName);
   };
 
+  const handleCopyHostedUrl = () => {
+    if (isCurrentLocked) {
+      onOpenPricing();
+      return;
+    }
+    const hostedUrl = `${window.location.origin}/?hosted=true&app=${encodeURIComponent(appName)}&doc=${activeTab}`;
+    navigator.clipboard.writeText(hostedUrl);
+    setHostedCopied(true);
+    setTimeout(() => setHostedCopied(false), 3000);
+  };
+
   return (
     <div className="bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col h-[750px] shadow-xl overflow-hidden">
       {/* Top Document Bar */}
@@ -122,6 +134,15 @@ ${currentContent.split('\n').map(line => {
               <span>{isEditing ? 'Preview' : 'Edit'}</span>
             </button>
           )}
+
+          <button
+            onClick={handleCopyHostedUrl}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-brand-500/10 border border-brand-500/30 hover:bg-brand-500/20 text-brand-300 text-xs font-semibold transition"
+            title="Get permanent public hosted URL for Apple App Store Connect or Stripe"
+          >
+            {hostedCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Globe className="w-3.5 h-3.5 text-brand-400" />}
+            <span>{hostedCopied ? 'URL Copied!' : 'Hosted URL'}</span>
+          </button>
 
           <button
             onClick={() => handleCopy('md')}
